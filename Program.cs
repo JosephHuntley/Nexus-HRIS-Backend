@@ -8,11 +8,11 @@ using Microsoft.OpenApi.Models;
 using Nexus;
 using Nexus.Data;
 
-using (NexusContext context = new())
-{
-    bool created = await context.Database.EnsureCreatedAsync();
-    Console.WriteLine($"Database created: {created}");
-}
+//using (NexusContext context = new())
+//{
+//    bool created = await context.Database.EnsureCreatedAsync();
+//    Console.WriteLine($"Database created: {created}");
+//}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +21,18 @@ builder.Services.AddControllers(option =>
 {
     //option.ReturnHttpNotAcceptable = true;
 }).AddNewtonsoftJson().AddXmlDataContractSerializerFormatters();
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "PolicyName",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000", "https://nexus-rose.vercel.app")
+                                .AllowAnyHeader()
+                                .AllowAnyMethod();
+        });
+});
 
 // Add JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -79,6 +91,8 @@ builder.Services.AddScoped<IVacationRepository, VacationRepository>();
 
 // Build the services
 var app = builder.Build();
+
+app.UseCors("PolicyName");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
